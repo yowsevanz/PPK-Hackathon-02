@@ -2,35 +2,198 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+# Expense Tracker
+
+## 📌 Deskripsi
+
+Expense Tracker merupakan aplikasi web yang digunakan untuk membantu pengguna dalam mengelola keuangan pribadi secara sederhana dan terstruktur.
+
+Aplikasi ini memungkinkan pengguna untuk mencatat pemasukan dan pengeluaran, melihat riwayat transaksi, serta memantau kondisi keuangan melalui dashboard yang menyediakan informasi saldo saat ini, total pemasukan, dan total pengeluaran.
+
+Aplikasi menerapkan sistem autentikasi dan otorisasi sehingga setiap pengguna hanya dapat mengakses dan mengelola data transaksi miliknya sendiri.
+
+---
+
+## Fitur Utama
+
+### 1. Register
+ Pengguna dapat membuat akun baru dengan memasukkan:
+   - Nama
+   - Email
+   - Password
+
+---
+
+### 2. Login
+   Pengguna dapat masuk ke dalam aplikasi menggunakan:
+
+   - Email
+   - Password
+
+---
+
+### 3. Session dan Authentication
+   Sistem menyimpan informasi pengguna yang sedang login selama session masih berlaku. Session juga digunakan untuk melindungi halaman yang membutuhkan autentikasi agar tidak dapat diakses oleh pengguna yang belum login.
+
+### 4. Dashboard
+   Dashboard menampilkan informasi utama pengguna, yaitu:
+
+   * Nama pengguna
+   * Saldo saat ini
+   * Total pemasukan
+   * Total pengeluaran
+   * Daftar transaksi terbaru
+
+### 5. Manajemen Transaksi
+   Pengguna dapat melakukan operasi CRUD terhadap transaksi keuangannya, yaitu:
+
+   * Menambahkan transaksi
+   * Melihat transaksi
+   * Mengubah transaksi
+   * Menghapus transaksi
+
+   Setiap transaksi dapat berupa *pemasukan* atau *pengeluaran*.
+
+### 6. Filter Transaksi
+   Pengguna dapat memfilter daftar transaksi berdasarkan jenis transaksi:
+
+   * Pemasukan
+   * Pengeluaran
+
+### 7. Cookies
+   Aplikasi menggunakan cookies untuk menyimpan minimal satu preferensi pengguna, misalnya pilihan filter transaksi terakhir, tema tampilan, atau preferensi lain yang relevan.
+
+### 8. Authorization
+   Setiap transaksi terhubung dengan akun pemiliknya. Sistem harus memastikan bahwa pengguna hanya dapat mengakses dan mengelola data transaksi miliknya sendiri.
+
+### 9. Logout
+   Pengguna dapat keluar dari aplikasi. Proses logout akan mengakhiri session pengguna sehingga halaman yang membutuhkan autentikasi tidak dapat diakses kembali sebelum pengguna melakukan login.
+
+---
+
+
+
+### 🍪 Preferensi Pengguna
+
+Aplikasi menggunakan cookies untuk menyimpan preferensi pengguna agar pengalaman penggunaan menjadi lebih nyaman.
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+- Next.js
+- TypeScript
+- Prisma ORM
+- Database
+- Tailwind CSS
+
+---
+
+## ⚙️ Instalasi
+
+Clone repository:
+
+```bash
+git clone <repository-url>
+```
+
+Masuk ke folder project:
+
+```bash
+cd expense-tracker
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+---
+
+## 🔐 Konfigurasi Environment
+
+Buat file `.env` pada folder utama project.
+
+Sesuaikan konfigurasi environment dengan kebutuhan aplikasi.
+
+Contoh:
+
+```env
+DATABASE_URL=
+```
+
+---
+
+## 🗄️ Konfigurasi Database
+
+Jalankan migrasi database:
+
+```bash
+npx prisma migrate dev
+```
+
+Generate Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+---
+
+## ▶️ Menjalankan Aplikasi
+
+Jalankan aplikasi dalam mode development:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Kemudian buka:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📁 Struktur Project
 
-To learn more about Next.js, take a look at the following resources:
+```
+expense-tracker
+│
+├── app/
+├── components/
+├── lib/
+├── prisma/
+├── public/
+├── package.json
+└── README.md
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔒 Keamanan Data
 
-## Deploy on Vercel
+Aplikasi menerapkan beberapa mekanisme keamanan:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Pengguna harus melakukan login untuk mengakses fitur tertentu
+- Setiap transaksi terhubung dengan akun pemiliknya
+- Pengguna hanya dapat mengelola transaksi miliknya sendiri
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🚀 Pengembangan Selanjutnya
+
+Beberapa pengembangan yang dapat dilakukan:
+
+- Visualisasi statistik keuangan
+- Export laporan transaksi
+- Pengaturan anggaran bulanan
+- Peningkatan tampilan responsif
+
+---
+
+## 📄 Lisensi
+
+Project ini dibuat untuk tujuan pembelajaran dan pengembangan aplikasi.
