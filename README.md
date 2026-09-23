@@ -94,7 +94,7 @@ Aplikasi menggunakan cookies untuk menyimpan preferensi pengguna agar pengalaman
 Clone repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/yowsevanz/PPK-Hackathon-02/
 ```
 
 Masuk ke folder project:
@@ -106,8 +106,8 @@ cd expense-tracker
 Install dependencies:
 
 ```bash
-npm install
-```
+npm install @prisma/adapter-pg pg
+npm install -D @types/pg
 
 ---
 
