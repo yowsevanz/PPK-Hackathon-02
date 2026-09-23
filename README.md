@@ -106,8 +106,8 @@ cd expense-tracker
 Install dependencies:
 
 ```bash
-npm install @prisma/adapter-pg pg
-npm install -D @types/pg
+npm install
+```
 
 ---
 
@@ -115,28 +115,63 @@ npm install -D @types/pg
 
 Buat file `.env` pada folder utama project.
 
-Sesuaikan konfigurasi environment dengan kebutuhan aplikasi.
+Sesuaikan konfigurasi environment dengan konfigurasi lokal yang digunakan.
 
 Contoh:
 
 ```env
-DATABASE_URL=
+DATABASE_URL="postgresql://username:password@localhost:5432/expense_tracker"
 ```
+
+Keterangan:
+
+- `username` → username PostgreSQL
+- `password` → password PostgreSQL
+- `localhost:5432` → alamat dan port PostgreSQL
+- `expense_tracker` → nama database yang digunakan
+
+Pastikan database PostgreSQL sudah dibuat sebelum menjalankan aplikasi.
 
 ---
 
 ## 🗄️ Konfigurasi Database
 
-Jalankan migrasi database:
+Project ini menggunakan Prisma ORM untuk mengelola database PostgreSQL.
+
+Install dependency Prisma PostgreSQL adapter:
 
 ```bash
-npx prisma migrate dev
+npm install @prisma/adapter-pg pg
+```
+
+Install TypeScript type untuk PostgreSQL:
+
+```bash
+npm install -D @types/pg
 ```
 
 Generate Prisma Client:
 
 ```bash
 npx prisma generate
+```
+
+Jalankan migration database:
+
+```bash
+npx prisma migrate dev
+```
+
+Jika database belum memiliki migration atau ingin membuat migration baru:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+Untuk melihat dan mengelola data melalui Prisma Studio:
+
+```bash
+npx prisma studio
 ```
 
 ---
@@ -149,7 +184,7 @@ Jalankan aplikasi dalam mode development:
 npm run dev
 ```
 
-Kemudian buka:
+Aplikasi dapat diakses melalui:
 
 ```
 http://localhost:3000
@@ -157,29 +192,18 @@ http://localhost:3000
 
 ---
 
-## 📁 Struktur Project
-
-```
-expense-tracker
-│
-├── app/
-├── components/
-├── lib/
-├── prisma/
-├── public/
-├── package.json
-└── README.md
-```
-
 ---
 
 ## 🔒 Keamanan Data
 
-Aplikasi menerapkan beberapa mekanisme keamanan:
+Aplikasi menerapkan mekanisme autentikasi dan otorisasi untuk menjaga keamanan data pengguna.
 
-- Pengguna harus melakukan login untuk mengakses fitur tertentu
-- Setiap transaksi terhubung dengan akun pemiliknya
-- Pengguna hanya dapat mengelola transaksi miliknya sendiri
+Implementasi keamanan meliputi:
+
+- Pengguna harus melakukan login untuk mengakses fitur tertentu.
+- Setiap transaksi terhubung dengan akun pemiliknya.
+- Pengguna hanya dapat melihat dan mengelola transaksi miliknya sendiri.
+- Halaman yang membutuhkan autentikasi tidak dapat diakses oleh pengguna yang belum login.
 
 ---
 
@@ -187,10 +211,10 @@ Aplikasi menerapkan beberapa mekanisme keamanan:
 
 Beberapa pengembangan yang dapat dilakukan:
 
-- Visualisasi statistik keuangan
-- Export laporan transaksi
-- Pengaturan anggaran bulanan
-- Peningkatan tampilan responsif
+- Penambahan visualisasi statistik keuangan.
+- Export laporan transaksi.
+- Fitur pengaturan anggaran bulanan.
+- Peningkatan tampilan responsif untuk berbagai perangkat.
 
 ---
 
