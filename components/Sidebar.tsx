@@ -7,8 +7,8 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { name: "Dashboard", path: "/dashboard", icon: "📊" },
-    { name: "Transaksi", path: "/transactions", icon: "💸" },
+    { name: "Dashboard", path: "/dashboard", icon: "" },
+    { name: "Transaksi", path: "/transactions", icon: "" },
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function Sidebar() {
         {/* Placeholder untuk Programmer 1 (Logout) */}
         <div className="mt-8 border-t border-gray-700 pt-4">
           <button className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-400 transition-colors rounded-lg hover:bg-gray-800 hover:text-red-300">
-            <span className="text-lg mr-3">🚪</span>
+            <span className="text-lg mr-3"></span>
             Logout
           </button>
         </div>
