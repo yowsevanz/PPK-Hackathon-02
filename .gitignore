@@ -44,3 +44,5 @@ next-env.d.ts
 
 # task checklist
 TASK_CHECKLIST.md
+
+package-lock.json
