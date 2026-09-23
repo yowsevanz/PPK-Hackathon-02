@@ -37,7 +37,7 @@ export default function DashboardPage() {
         {/* Card Saldo */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <p className="text-sm font-medium text-gray-500 mb-1">Saldo Saat Ini</p>
-          <p className="text-3xl font-bold text-gray-900">{formatRupiah(saldoSaatIni)}</p>
+          <p className="text-2xl font-bold text-gray-900">{formatRupiah(saldoSaatIni)}</p>
         </div>
 
         {/* Card Pemasukan */}
