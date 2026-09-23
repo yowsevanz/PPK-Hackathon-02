@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import crypto from 'crypto'
 
 // ==================== REGISTER ====================
 export async function registerUser(prevState: any, formData: FormData) {
@@ -16,7 +17,6 @@ export async function registerUser(prevState: any, formData: FormData) {
   }
 
   try {
-    // Cek apakah email sudah terdaftar (Prepared Statement via Prisma)
     const existingUser = await prisma.user.findUnique({
       where: { email },
     })
@@ -25,10 +25,8 @@ export async function registerUser(prevState: any, formData: FormData) {
       return { error: 'Email sudah terdaftar gunakan email lain!' }
     }
 
-    // Enskripsi password menggunakan bcryptjs (menerapkan keamanan kredensial)
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Simpan ke database dengan prinsip ACID (Atomic & Consistent)
     await prisma.user.create({
       data: {
         name,
@@ -40,7 +38,6 @@ export async function registerUser(prevState: any, formData: FormData) {
     return { error: 'Terjadi kesalahan pada server saat registrasi.' }
   }
 
-  // Jika berhasil, alihkan ke halaman login
   redirect('/login?registered=success')
 }
 
@@ -54,7 +51,6 @@ export async function loginUser(prevState: any, formData: FormData) {
   }
 
   try {
-    // Cari user berdasarkan email
     const user = await prisma.user.findUnique({
       where: { email },
     })
@@ -63,32 +59,55 @@ export async function loginUser(prevState: any, formData: FormData) {
       return { error: 'Email atau password salah!' }
     }
 
-    // Verifikasi password
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) {
       return { error: 'Email atau password salah!' }
     }
 
-    // SIMPAN SESSION KE COOKIE (Berlaku 1 hari)
+    const sessionToken = crypto.randomBytes(32).toString('hex')
+
+    //Simpan token ke tabel Session di database via Prisma
+    await prisma.session.create({
+      data: {
+        userId: user.id,
+        token: sessionToken,
+      },
+    })
+
+    // SIMPAN TOKEN KE COOKIE (Bukan lagi angka ID mentah)
     const cookieStore = await cookies()
-    cookieStore.set('session_user_id', user.id.toString(), {
+    cookieStore.set('session_user_id', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 24, // 1 hari
       path: '/',
     })
   } catch (error) {
+    console.error(error);
     return { error: 'Terjadi kesalahan pada server saat login.' }
   }
 
-  // Jika berhasil, arahkan ke dashboard
   redirect('/dashboard')
 }
 
 // ==================== LOGOUT ====================
 export async function logoutUser() {
   const cookieStore = await cookies()
+  const sessionToken = cookieStore.get('session_user_id')?.value
+
+  if (sessionToken) {
+    // Hapus sesi dari database agar token tidak bisa dipakai lagi
+    try {
+      await prisma.session.delete({
+        where: { token: sessionToken },
+      })
+    } catch (e) {
+      // Abaikan jika token sudah tidak ada di database
+    }
+  }
+
+  // Hapus cookie dari browser
   cookieStore.delete('session_user_id')
   redirect('/login')
 }
