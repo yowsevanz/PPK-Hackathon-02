@@ -1,4 +1,16 @@
-import { mockTransactions } from "@/lib/mockData";
+import { pool } from "@/lib/db";
+import { getTransactionUserId } from "@/lib/transactions";
+
+export const dynamic = "force-dynamic";
+
+// Tipe data untuk baris transaksi
+type TransactionRow = {
+  id: number;
+  jenis: "pemasukan" | "pengeluaran";
+  nominal: number;
+  keterangan: string;
+  tanggal: Date;
+};
 
 // Helper untuk format Rupiah
 const formatRupiah = (angka: number) => {
@@ -9,21 +21,36 @@ const formatRupiah = (angka: number) => {
   }).format(angka);
 };
 
-export default function DashboardPage() {
-  // 1. Logika Agregasi (Nantinya diganti dengan SQL SUM Query)
-  const totalPemasukan = mockTransactions
-    .filter((t) => t.jenis === "pemasukan")
-    .reduce((acc, curr) => acc + curr.nominal, 0);
+export default async function DashboardPage() {
+  // Ambil ID user aktif (dari fungsi temanmu)
+  const userId = await getTransactionUserId();
 
-  const totalPengeluaran = mockTransactions
-    .filter((t) => t.jenis === "pengeluaran")
-    .reduce((acc, curr) => acc + curr.nominal, 0);
+  // 1. Logika Agregasi (Menggunakan SQL SUM Query agar efisien)
+  const totalsResult = await pool.query(
+    `SELECT 
+      COALESCE(SUM(CASE WHEN "jenis" = 'pemasukan' THEN "nominal" ELSE 0 END), 0) AS "totalPemasukan",
+      COALESCE(SUM(CASE WHEN "jenis" = 'pengeluaran' THEN "nominal" ELSE 0 END), 0) AS "totalPengeluaran"
+     FROM "Transaction"
+     WHERE "userId" = $1`,
+    [userId]
+  );
 
+  // Karena node-postgres (pg) sering me-return agregasi SUM dalam bentuk string, kita parse ke Number
+  const totalPemasukan = Number(totalsResult.rows[0]?.totalPemasukan || 0);
+  const totalPengeluaran = Number(totalsResult.rows[0]?.totalPengeluaran || 0);
   const saldoSaatIni = totalPemasukan - totalPengeluaran;
 
-  // 2. Ambil 5 transaksi terbaru (Di SQL: ORDER BY tanggal DESC LIMIT 5)
-  // Karena mock data terurut dari tanggal terlama, kita reverse lalu ambil 5
-  const transaksiTerbaru = [...mockTransactions].reverse().slice(0, 5);
+  // 2. Ambil 5 transaksi terbaru (SQL ORDER BY tanggal DESC LIMIT 5)
+  const recentResult = await pool.query<TransactionRow>(
+    `SELECT "id", "jenis", "nominal", "keterangan", "tanggal"
+     FROM "Transaction"
+     WHERE "userId" = $1
+     ORDER BY "tanggal" DESC, "id" DESC
+     LIMIT 5`,
+    [userId]
+  );
+  
+  const transaksiTerbaru = recentResult.rows;
 
   return (
     <div className="space-y-8">
@@ -59,7 +86,7 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-gray-900">Transaksi Terbaru</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
                 <th className="px-6 py-4 font-medium">Tanggal</th>
@@ -69,36 +96,44 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {transaksiTerbaru.map((trx) => (
-                <tr key={trx.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {new Date(trx.tanggal).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    {trx.keterangan}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                        trx.jenis === "pemasukan"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-rose-100 text-rose-700"
-                      }`}
-                    >
-                      {trx.jenis.charAt(0).toUpperCase() + trx.jenis.slice(1)}
-                    </span>
-                  </td>
-                  <td className={`px-6 py-4 text-sm font-semibold text-right ${
-                    trx.jenis === "pemasukan" ? "text-emerald-600" : "text-rose-600"
-                  }`}>
-                    {trx.jenis === "pemasukan" ? "+" : "-"}{formatRupiah(trx.nominal)}
+              {transaksiTerbaru.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                    Belum ada transaksi.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                transaksiTerbaru.map((trx) => (
+                  <tr key={trx.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {new Date(trx.tanggal).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      {trx.keterangan}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <span
+                        className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                          trx.jenis === "pemasukan"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-rose-100 text-rose-700"
+                        }`}
+                      >
+                        {trx.jenis.charAt(0).toUpperCase() + trx.jenis.slice(1)}
+                      </span>
+                    </td>
+                    <td className={`px-6 py-4 text-sm font-semibold text-right ${
+                      trx.jenis === "pemasukan" ? "text-emerald-600" : "text-rose-600"
+                    }`}>
+                      {trx.jenis === "pemasukan" ? "+" : "-"}{formatRupiah(trx.nominal)}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
