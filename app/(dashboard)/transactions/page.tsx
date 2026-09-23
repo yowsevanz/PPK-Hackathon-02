@@ -1,100 +1,162 @@
-import { cookies } from "next/headers";
-import { mockTransactions } from "@/lib/mockData";
-import TransactionFilter from "@/components/TransactionFilter";
+import Link from "next/link";
+import { createTransaction, deleteTransaction, updateTransaction } from "@/lib/actions/transactionActions";
+import { getTransactionUserId } from "@/lib/transactions";
+import { pool } from "@/lib/db";
 
-// Helper untuk format Rupiah
-const formatRupiah = (angka: number) => {
+export const dynamic = "force-dynamic";
+
+type TransactionRow = {
+  id: number;
+  jenis: "pemasukan" | "pengeluaran";
+  nominal: number;
+  keterangan: string;
+  tanggal: Date;
+};
+
+function dateForInput(date: Date) {
+  const normalized = date instanceof Date ? date : new Date(date);
+  return new Date(normalized.getTime() - normalized.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 10);
+}
+
+function formatRupiah(value: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(angka);
-};
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 export default async function TransactionsPage() {
-  // 1. Baca preferensi filter dari Cookies (default: 'semua')
-  const cookieStore = await cookies();
-  const activeFilter = cookieStore.get("transaction_filter")?.value || "semua";
+  const userId = await getTransactionUserId();
+  const result = await pool.query<TransactionRow>(
+    `SELECT "id", "jenis", "nominal", "keterangan", "tanggal"
+     FROM "Transaction"
+     WHERE "userId" = $1
+     ORDER BY "tanggal" DESC, "id" DESC`,
+    [userId],
+  );
 
-  // 2. Filter data berdasarkan cookie (Nantinya P2 akan mengubah ini menjadi klausa SQL WHERE)
-  const filteredTransactions = mockTransactions.filter((trx) => {
-    if (activeFilter === "semua") return true;
-    return trx.jenis === activeFilter;
-  });
+  const transactions = result.rows;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-end">
+    <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Daftar Transaksi</h1>
-          <p className="mt-2 text-gray-600">Kelola semua pemasukan dan pengeluaranmu.</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            Ruang keuangan
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+            Manajemen transaksi
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+            Catat pemasukan dan pengeluaran, lalu perbarui riwayatnya kapan saja.
+          </p>
         </div>
-        
-        {/* Panggil komponen Client Component dan passing filter saat ini */}
-        <TransactionFilter activeFilter={activeFilter} />
-      </div>
+        <Link className="text-sm font-semibold text-emerald-800 underline-offset-4 hover:underline" href="/">
+          Kembali ke beranda
+        </Link>
+      </header>
 
-      {/* Tabel Transaksi */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 text-gray-500 text-sm border-b border-gray-100">
-                <th className="px-6 py-4 font-medium">Tanggal</th>
-                <th className="px-6 py-4 font-medium">Keterangan</th>
-                <th className="px-6 py-4 font-medium">Jenis</th>
-                <th className="px-6 py-4 font-medium text-right">Nominal</th>
-                <th className="px-6 py-4 font-medium text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredTransactions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    Tidak ada transaksi ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                filteredTransactions.map((trx) => (
-                  <tr key={trx.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(trx.tanggal).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {trx.keterangan}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span
-                        className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          trx.jenis === "pemasukan"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-rose-100 text-rose-700"
-                        }`}
-                      >
-                        {trx.jenis.charAt(0).toUpperCase() + trx.jenis.slice(1)}
-                      </span>
-                    </td>
-                    <td className={`px-6 py-4 text-sm font-semibold text-right ${
-                      trx.jenis === "pemasukan" ? "text-emerald-600" : "text-rose-600"
-                    }`}>
-                      {trx.jenis === "pemasukan" ? "+" : "-"}{formatRupiah(trx.nominal)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-center">
-                       {/* Tombol statis, fungsionalitas aslinya (Ubah/Hapus) akan dikerjakan Programmer 2 */}
-                      <button className="text-blue-600 hover:text-blue-800 font-medium mr-3">Edit</button>
-                      <button className="text-red-600 hover:text-red-800 font-medium">Hapus</button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <section className="mb-8 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-7">
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold text-slate-950">Tambah transaksi</h2>
+          <p className="mt-1 text-sm text-slate-600">Isi detail transaksi yang ingin dicatat.</p>
         </div>
-      </div>
-    </div>
+        <form action={createTransaction} className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Jenis
+            <select className="h-11 rounded-xl border border-slate-200 bg-white px-3" name="jenis" required defaultValue="pengeluaran">
+              <option value="pemasukan">Pemasukan</option>
+              <option value="pengeluaran">Pengeluaran</option>
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Nominal (Rp)
+            <input className="h-11 rounded-xl border border-slate-200 px-3" name="nominal" type="number" min="1" step="1" placeholder="150000" required />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Tanggal
+            <input className="h-11 rounded-xl border border-slate-200 px-3" name="tanggal" type="date" required defaultValue={dateForInput(new Date())} />
+          </label>
+          <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2 xl:col-span-1">
+            Keterangan
+            <input className="h-11 rounded-xl border border-slate-200 px-3" name="keterangan" type="text" placeholder="Contoh: Makan siang" required />
+          </label>
+          <div className="md:col-span-2 xl:col-span-4">
+            <button className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-700 px-5 text-sm font-semibold text-white transition hover:bg-emerald-800" type="submit">
+              Simpan transaksi
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5 sm:px-7">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-950">Riwayat transaksi</h2>
+            <p className="mt-1 text-sm text-slate-600">{transactions.length} transaksi tercatat</p>
+          </div>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Milik akun aktif</span>
+        </div>
+
+        {transactions.length === 0 ? (
+          <div className="px-5 py-14 text-center sm:px-7">
+            <p className="font-medium text-slate-800">Belum ada transaksi</p>
+            <p className="mt-1 text-sm text-slate-500">Transaksi pertama yang kamu simpan akan muncul di sini.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {transactions.map((transaction) => (
+              <article className="grid gap-5 px-5 py-5 sm:px-7 lg:grid-cols-[1fr_auto]" key={transaction.id}>
+                <form action={updateTransaction} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1.4fr_1fr_1.2fr_auto] xl:items-end">
+                  <input name="transactionId" type="hidden" value={transaction.id} />
+                  <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Jenis
+                    <select className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-sm font-normal normal-case tracking-normal text-slate-800" name="jenis" defaultValue={transaction.jenis} required>
+                      <option value="pemasukan">Pemasukan</option>
+                      <option value="pengeluaran">Pengeluaran</option>
+                    </select>
+                  </label>
+                  <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Keterangan
+                    <input className="h-10 rounded-lg border border-slate-200 px-2 text-sm font-normal normal-case tracking-normal text-slate-800" name="keterangan" defaultValue={transaction.keterangan} required />
+                  </label>
+                  <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Nominal (Rp)
+                    <input className="h-10 rounded-lg border border-slate-200 px-2 text-sm font-normal normal-case tracking-normal text-slate-800" name="nominal" type="number" min="1" step="1" defaultValue={transaction.nominal} required />
+                  </label>
+                  <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Tanggal
+                    <input className="h-10 rounded-lg border border-slate-200 px-2 text-sm font-normal normal-case tracking-normal text-slate-800" name="tanggal" type="date" defaultValue={dateForInput(transaction.tanggal)} required />
+                  </label>
+                  <button className="h-10 rounded-lg border border-emerald-200 px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-50" type="submit">
+                    Simpan edit
+                  </button>
+                </form>
+
+                <div className="flex items-center justify-between gap-4 lg:justify-end">
+                  <div>
+                    <p className={`text-right text-sm font-bold ${transaction.jenis === "pemasukan" ? "text-emerald-700" : "text-rose-700"}`}>
+                      {transaction.jenis === "pemasukan" ? "+" : "−"}{formatRupiah(transaction.nominal)}
+                    </p>
+                    <p className="mt-1 text-right text-xs text-slate-500">
+                      {new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(transaction.tanggal)}
+                    </p>
+                  </div>
+                  <form action={deleteTransaction}>
+                    <input name="transactionId" type="hidden" value={transaction.id} />
+                    <button aria-label={`Hapus transaksi ${transaction.keterangan}`} className="h-10 rounded-lg border border-rose-200 px-4 text-sm font-semibold text-rose-700 transition hover:bg-rose-50" type="submit">
+                      Hapus
+                    </button>
+                  </form>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
