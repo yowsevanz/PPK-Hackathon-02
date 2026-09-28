@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getTransactionUserId } from "@/lib/transactions";
 import { pool } from "@/lib/db";
 import TransactionClient from "@/components/TransactionClient";
@@ -20,12 +19,12 @@ export type TransactionRow = {
 export default async function TransactionsPage() {
 
 
-  // Ambil user yang sedang login
+  // ambil user yang sedang login
   const userId = await getTransactionUserId();
 
 
 
-  // Ambil transaksi user
+  // ambil transaksi user dari database
   const result = await pool.query<TransactionRow>(
     `
     SELECT
@@ -48,43 +47,14 @@ export default async function TransactionsPage() {
 
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 space-y-6">
 
+    <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
 
-      <div className="flex flex-wrap justify-between items-end gap-4">
-
-        <div>
-
-          <h1 className="text-3xl font-bold text-gray-900">
-            Daftar Transaksi
-          </h1>
-
-
-          <p className="mt-2 text-gray-600">
-            Kelola semua pemasukan dan pengeluaranmu.
-          </p>
-
-
-          <Link
-            href="/"
-            className="text-sm font-semibold text-emerald-700 underline-offset-4 hover:underline mt-3 inline-block"
-          >
-            ← Kembali ke beranda
-          </Link>
-
-
-        </div>
-
-      </div>
-
-
-
-      {/* Semua interaksi AJAX ditangani Client Component */}
       <TransactionClient
         initialTransactions={transactions}
       />
 
-
     </main>
+
   );
 }
