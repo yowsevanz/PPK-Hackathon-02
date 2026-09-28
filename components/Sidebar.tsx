@@ -12,6 +12,7 @@ export default function Sidebar() {
   const menuItems = [
     { name: "Dashboard", path: "/dashboard", icon: "" },
     { name: "Transaksi", path: "/transactions", icon: "" },
+    { name: "Anggaran", path: "/budget", icon: "" },
   ];
 
   const handleConfirmLogout = async () => {
