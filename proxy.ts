@@ -6,7 +6,7 @@ export function proxy(request: NextRequest) {
   const sessionCookie = request.cookies.get('session_user_id')
   const { pathname } = request.nextUrl
 
-  const isProtectedPage = pathname.startsWith('/dashboard') || pathname.startsWith('/transactions')
+  const isProtectedPage = pathname.startsWith('/dashboard') || pathname.startsWith('/transactions') || pathname.startsWith('/budget')
 
   if (isProtectedPage && !sessionCookie) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -20,5 +20,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/transactions/:path*', '/login', '/register'],
+  matcher: ['/dashboard/:path*', '/transactions/:path*', '/budget/:path*', '/login', '/register'],
 }
