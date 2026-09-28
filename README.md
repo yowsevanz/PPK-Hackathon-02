@@ -150,6 +150,12 @@ Install TypeScript type untuk PostgreSQL:
 npm install -D @types/pg
 ```
 
+Install TypeScript type untuk PostgreSQL:
+
+```bash
+npx prisma migrate reset
+```
+
 Generate Prisma Client:
 
 ```bash
