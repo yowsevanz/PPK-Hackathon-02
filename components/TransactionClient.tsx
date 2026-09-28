@@ -1,17 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import type { TransactionRow } from "@/app/(dashboard)/transactions/page";
 import TransactionFilter from "@/components/TransactionFilter";
 import TransactionTable from "@/components/TransactionTable";
 
 
-type TransactionRow = {
-  id: number;
-  jenis: "pemasukan" | "pengeluaran";
-  nominal: number;
-  keterangan: string;
-  tanggal: string;
-};
 
 
 

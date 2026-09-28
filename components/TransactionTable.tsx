@@ -1,13 +1,5 @@
 "use client";
-
-
-type TransactionRow = {
-  id: number;
-  jenis: "pemasukan" | "pengeluaran";
-  nominal: number;
-  keterangan: string;
-  tanggal: string;
-};
+import type { TransactionRow } from "@/app/(dashboard)/transactions/page";
 
 
 interface Props {
