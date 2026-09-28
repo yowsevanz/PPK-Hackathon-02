@@ -56,7 +56,7 @@ export default async function TransactionsPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 space-y-6">
-      {/* Header & Filter (UI milikmu + Link kembali temanmu) */}
+      {/* Header & Filter */}
       <div className="flex flex-wrap justify-between items-end gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Daftar Transaksi</h1>
