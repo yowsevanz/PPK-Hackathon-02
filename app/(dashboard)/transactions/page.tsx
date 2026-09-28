@@ -56,11 +56,11 @@ export default async function TransactionsPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 space-y-6">
-      {/* Header & Filter (UI milikmu + Link kembali temanmu) */}
+      {/* Header & Filter */}
       <div className="flex flex-wrap justify-between items-end gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Daftar Transaksi</h1>
-          <p className="mt-2 text-gray-600">Kelola semua pemasukan dan pengeluaranmu.</p>
+          <p className="mt-2 text-gray-600">Lihat semua pengelaran dan pemasukanmu di sini.</p>
           <Link className="text-sm font-semibold text-emerald-700 underline-offset-4 hover:underline mt-3 inline-block" href="/">
             &larr; Kembali ke beranda
           </Link>
@@ -68,40 +68,6 @@ export default async function TransactionsPage() {
         
         <TransactionFilter activeFilter={activeFilter} />
       </div>
-
-      {/* Form Tambah Transaksi (UI milikmu + Action temanmu) */}
-      <section className="mb-8 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-7">
-        <div className="mb-5">
-          <h2 className="text-lg font-semibold text-slate-950">Tambah transaksi</h2>
-          <p className="mt-1 text-sm text-slate-600">Isi detail transaksi yang ingin dicatat.</p>
-        </div>
-        <form action={createTransaction} className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Jenis
-            <select className="h-11 rounded-xl border border-slate-200 bg-white px-3 focus:border-emerald-500 focus:ring-emerald-500 outline-none transition" name="jenis" required defaultValue="pengeluaran">
-              <option value="pemasukan">Pemasukan</option>
-              <option value="pengeluaran">Pengeluaran</option>
-            </select>
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Nominal (Rp)
-            <input className="h-11 rounded-xl border border-slate-200 px-3 focus:border-emerald-500 focus:ring-emerald-500 outline-none transition" name="nominal" type="number" min="1" step="1" placeholder="150000" required />
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700">
-            Tanggal
-            <input className="h-11 rounded-xl border border-slate-200 px-3 focus:border-emerald-500 focus:ring-emerald-500 outline-none transition" name="tanggal" type="date" required defaultValue={dateForInput(new Date())} />
-          </label>
-          <label className="grid gap-2 text-sm font-medium text-slate-700 md:col-span-2 xl:col-span-1">
-            Keterangan
-            <input className="h-11 rounded-xl border border-slate-200 px-3 focus:border-emerald-500 focus:ring-emerald-500 outline-none transition" name="keterangan" type="text" placeholder="Contoh: Makan siang" required />
-          </label>
-          <div className="md:col-span-2 xl:col-span-4">
-            <button className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-700 px-5 text-sm font-semibold text-white transition hover:bg-emerald-800" type="submit">
-              Simpan transaksi
-            </button>
-          </div>
-        </form>
-      </section>
 
       {/* Tabel Transaksi (UI Tabel milikmu dengan input inline agar CRUD bekerja) */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
